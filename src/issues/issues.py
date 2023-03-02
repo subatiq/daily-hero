@@ -1,15 +1,20 @@
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 import os
+
+from urllib3.exceptions import HTTPError
 import httpx
 from dotenv import load_dotenv
 from loguru import logger
-from urllib3.exceptions import HTTPError
 
 load_dotenv()
 
-TOKEN = os.getenv('GITLAB_TOKEN')
 GITLAB_URL = os.getenv('GITLAB_URL')
+TOKEN = os.getenv('GITLAB_TOKEN')
+
+if not TOKEN or not GITLAB_URL:
+    logger.error("No gitlab URL or Token")
+    raise RuntimeError("No gitlab URL or Token")
 
 UserID = int
 

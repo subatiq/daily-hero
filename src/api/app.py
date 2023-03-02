@@ -1,12 +1,17 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, Response
 
 from src.main import send_daily_report
 
 app = FastAPI()
 
 
-@app.get("/")
-async def root():
-    send_daily_report()
+@app.post("/")
+async def trigger_daily_report():
+    try:
+        send_daily_report()
+        return Response("OK")
+
+    except Exception as exc:
+        raise HTTPException(500, detail=str(exc))
 
 

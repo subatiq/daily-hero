@@ -8,7 +8,7 @@ from src.issues.users import get_user_emails
 
 load_dotenv()
 
-DEBUG = os.getenv('ENV', 'DEBUG')
+ENV = os.getenv('ENV', 'DEBUG')
 DEBUG_EMAIL = os.getenv('DEBUG_EMAIL')
 
 def send_daily_report() -> None:
@@ -22,7 +22,7 @@ def send_daily_report() -> None:
 
     emails = [DEBUG_EMAIL] if DEBUG_EMAIL else []
 
-    if not DEBUG:
+    if not ENV == 'DEBUG':
         emails = get_user_emails()
 
     logger.info(f'Got emails: {emails}')
