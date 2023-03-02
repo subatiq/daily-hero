@@ -1,31 +1,38 @@
 import os
 import smtplib
-from dotenv import load_dotenv                                      # Импортируем библиотеку по работе с SMTP
+from dotenv import load_dotenv
 import markdown
 
-# Добавляем необходимые подклассы - MIME-типы
-from email.mime.multipart import MIMEMultipart      # Многокомпонентный объект
+from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 from loguru import logger
 
 load_dotenv()
 
+MESSAGE_SUBJECT = os.getenv('MESSAGE_SUBJECT', 'Итоги дня')
 EMAIL = os.getenv('EMAIL')
 EMAIL_PASSWORD = os.getenv('EMAIL_PASSWORD')
+SMTP_SERVER = os.getenv('SMTP_SERVER')
+SMTP_PORT = int(os.getenv('SMTP_PORT', -1))
 
 
 def send_email(emails: list[str], body: str):
-    addr_from = EMAIL                # Адресат
-    password  = EMAIL_PASSWORD                                  # Пароль
+    addr_from = EMAIL
+    password  = EMAIL_PASSWORD
     if addr_from is None or password is None:
         logger.error('EMAIL of EMAIL_PASSWORD are not specified')
         return
 
-    msg = MIMEMultipart()                               # Создаем сообщение
-    msg['From']    = addr_from                          # Адресат
-    msg['To']      = ', '.join(emails)                            # Получатель
-    msg['Subject'] = 'Инвиановские герои дня'                   # Тема сообщения
+    if not SMTP_SERVER or SMTP_PORT == -1:
+        logger.error('SMTP server is not configured')
+        return
+
+    msg = MIMEMultipart()
+    msg['From']    = addr_from
+    msg['To']      = ', '.join(emails)
+    msg['Subject'] = MESSAGE_SUBJECT
+
     head = '''
     <meta charset=utf-8>
     <style>
@@ -37,10 +44,10 @@ def send_email(emails: list[str], body: str):
 
     html = f'<html><head>{head}</head><body>{markdown.markdown(body)}</body></html>'
     print(html)
-    msg.attach(MIMEText(html, 'html'))                 # Добавляем в сообщение текст
+    msg.attach(MIMEText(html, 'html'))
 
-    server = smtplib.SMTP_SSL('smtp.yandex.ru', 465)           # Создаем объект SMTP
-    server.login(addr_from, password)                   # Получаем доступ
+    server = smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT)
+    server.login(addr_from, password)
     logger.info('Logged in to SMTP')
     server.sendmail(addr_from, emails, msg.as_string())
 

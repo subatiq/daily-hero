@@ -26,9 +26,9 @@ def format_opened_issues(opened_issues: list[OpenedIssue]) -> Optional[str]:
     message = "\n\n## Открытые сегодня задачки\n"
 
     for opened in opened_issues:
-        message += f'- 🔲 {opened.name} ([{opened.short_ref}]({opened.url}))'
+        message += f'- 🔲 {opened.name} ([{opened.short_ref}]({opened.url}))\n'
 
-    message += '\n\n(Tecтовая рассылочка)'
+    message += '\n\n'
     return message
 
 
