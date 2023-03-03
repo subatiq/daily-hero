@@ -41,11 +41,11 @@ class OpenedIssue:
 def get_closed_issues() -> dict[str, list[ClosedIssue]]:
     today = datetime.utcnow().date()
     yesterday = today - timedelta(days=1)
-    period_start = datetime(yesterday.year, yesterday.month, yesterday.day, hour=15, minute=00).isoformat()
-    period_end = datetime(today.year, today.month, today.day, hour=15, minute=00).isoformat()
+    period_start = datetime(yesterday.year, yesterday.month, yesterday.day, hour=15, minute=00)
+    period_end = datetime(today.year, today.month, today.day, hour=15, minute=00)
     try:
         result = httpx.get(
-            f'{GITLAB_URL}/api/v4/issues?private_token={TOKEN}&scope=all&state=closed&updated_after={period_start}&updated_before={period_end}'
+            f'{GITLAB_URL}/api/v4/issues?private_token={TOKEN}&scope=all&state=closed&updated_after={period_start.isoformat()}&updated_before={period_end.isoformat()}'
         )
     except HTTPError as err:
         logger.error(f'Error during fetch: {err}')
@@ -55,6 +55,11 @@ def get_closed_issues() -> dict[str, list[ClosedIssue]]:
     heroes: dict[str, list[ClosedIssue]] = defaultdict(list)
     for issue in issues:
         if not issue:
+            continue
+
+        closed_at = datetime.fromisoformat(issue['closed_at'].replace('Z', ''))
+        print(issue['title'], closed_at, period_start)
+        if closed_at < period_start:
             continue
 
         champion: str = (issue.get('assignee', {}) or {}).get('name', 'Unknown hero')
