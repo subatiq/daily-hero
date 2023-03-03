@@ -9,7 +9,8 @@ load_dotenv()
 TOKEN = os.getenv('GITLAB_TOKEN')
 GITLAB_URL = os.getenv('GITLAB_URL')
 
-BLACKLIST = ['gitlab@edgevision.pro']
+BLACKLIST = os.getenv('BLACKLIST', '').split('|')
+
 
 def get_user_emails() -> list[str]:
     try:
@@ -21,10 +22,14 @@ def get_user_emails() -> list[str]:
         raise
 
     users = result.json()
+
+    logger.info(f"Got users: {users}")
+
     return [
         user['email'] for user in users if
-        user['state'] != 'blocked'
+        user.get('email')
+        and user['state'] != 'blocked'
         and 'bot' not in user['username']
-        and user['email'] not in BLACKLIST
+        and user.get('email') not in BLACKLIST
         and 'hero' not in (user.get('pronouns') or '')]
 

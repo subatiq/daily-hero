@@ -1,18 +1,19 @@
 from datetime import datetime
 from typing import Optional
-from src.issues.issues import ClosedIssue, OpenedIssue
+from src.issues.issues import ClosedIssue, OpenedIssue, get_closed_issues, get_opened_issues
 
 
-def format_closed_issues(closed_issues: list[ClosedIssue]) -> Optional[str]:
+def format_closed_issues(closed_issues: dict[str, list[ClosedIssue]]) -> Optional[str]:
     if not closed_issues:
         return None
 
     message = f"# 🏆 Герои дня ({datetime.utcnow().date().isoformat()})\n"
     message += "\n## Закрытые сегодня задачки\n"
-    for closed in closed_issues:
-        message += f'**{closed.champion}**\n\n'
-        for issue in [i for i in closed_issues if i.champion == closed.champion]:
-            message += f'- ✅ {issue.name} ([{issue.short_ref}]({issue.url}))\n'
+    for champion, issues in closed_issues.items():
+        message += f'**{champion}**\n\n'
+        for issue in issues:
+            milestone = f'[{issue.milestone}] ' if issue.milestone else ''
+            message += f'- ✅ {milestone}{issue.name} ([{issue.short_ref}]({issue.url}))\n'
 
         message += '\n'
 
@@ -25,14 +26,18 @@ def format_opened_issues(opened_issues: list[OpenedIssue]) -> Optional[str]:
 
     message = "\n\n## Открытые сегодня задачки\n"
 
-    for opened in opened_issues:
-        message += f'- 🔲 {opened.name} ([{opened.short_ref}]({opened.url}))\n'
+    for issue in opened_issues:
+        milestone = f'[{issue.milestone}] ' if issue.milestone else ''
+        message += f'- 🔲 {milestone}{issue.name} ([{issue.short_ref}]({issue.url}))\n'
 
     message += '\n\n'
     return message
 
 
-def format_notification(closed_issues: list[ClosedIssue], opened_issues: list[OpenedIssue]) -> Optional[str]:
+def format_notification(
+    closed_issues: dict[str, list[ClosedIssue]],
+    opened_issues: list[OpenedIssue]
+) -> Optional[str]:
     closed_message = format_closed_issues(closed_issues) or ""
     opened_message = format_opened_issues(opened_issues) or ""
 
@@ -43,4 +48,5 @@ def format_notification(closed_issues: list[ClosedIssue], opened_issues: list[Op
 
     return message
 
-
+if __name__ == "__main__":
+    print(format_notification(get_closed_issues(), get_opened_issues()))

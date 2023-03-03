@@ -43,7 +43,6 @@ def send_email(emails: list[str], body: str):
     '''
 
     html = f'<html><head>{head}</head><body>{markdown.markdown(body)}</body></html>'
-    print(html)
     msg.attach(MIMEText(html, 'html'))
 
     server = smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT)
