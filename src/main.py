@@ -4,12 +4,15 @@ from loguru import logger
 from src.issues.issues import get_closed_issues, get_opened_issues
 from src.issues.formating import format_notification
 from src.issues.notification import send_email
-from src.issues.users import get_user_emails
 
 load_dotenv()
 
 ENV = os.getenv('ENV', 'DEBUG')
 DEBUG_EMAIL = os.getenv('DEBUG_EMAIL')
+TARGET_EMAIL = os.getenv('TARGET_EMAIL')
+
+if not TARGET_EMAIL:
+    raise ValueError("TARGET_EMAIL should be set")
 
 def send_daily_report() -> None:
     closed = get_closed_issues()
@@ -20,14 +23,14 @@ def send_daily_report() -> None:
         logger.info('Nothing to send today')
         return
 
-    emails = [DEBUG_EMAIL] if DEBUG_EMAIL else []
+    email = DEBUG_EMAIL if DEBUG_EMAIL else []
 
     if not ENV == 'DEBUG':
-        emails = get_user_emails()
+        email = TARGET_EMAIL
 
-    logger.info(f'Got emails: {emails}')
+    logger.info(f'Will use email: {email}')
 
-    send_email(emails, message)
+    send_email(email, message)
 
 
 if __name__ == "__main__":

@@ -17,7 +17,7 @@ SMTP_SERVER = os.getenv('SMTP_SERVER')
 SMTP_PORT = int(os.getenv('SMTP_PORT', -1))
 
 
-def send_email(emails: list[str], body: str):
+def send_email(target_email: str, body: str):
     addr_from = EMAIL
     password  = EMAIL_PASSWORD
     if addr_from is None or password is None:
@@ -30,7 +30,7 @@ def send_email(emails: list[str], body: str):
 
     msg = MIMEMultipart()
     msg['From']    = addr_from
-    msg['To']      = ', '.join(emails)
+    msg['To']      = target_email
     msg['Subject'] = MESSAGE_SUBJECT
 
     head = '''
@@ -48,8 +48,7 @@ def send_email(emails: list[str], body: str):
     server = smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT)
     server.login(addr_from, password)
     logger.info('Logged in to SMTP')
-    server.sendmail(addr_from, emails, msg.as_string())
+    server.sendmail(addr_from, target_email, msg.as_string())
 
-    emails_str_list = "\n".join(emails)
-    logger.info(f'Sent email to {emails_str_list}')
+    logger.info(f'Sent email to {target_email}')
 
